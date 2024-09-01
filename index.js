@@ -30,9 +30,8 @@ app.use('/api/wishlist', wishlistRouter)
 app.use('/api/cart', cartRouter)
 app.use('/api/coupons', couponRouter)
 app.use('/api/orders', orderRouter)
-app.get('/api', (req, res) => res.send('Hello World!'))
 
-app.use('/', (req, res, next) => {
+app.get('/', (req, res, next) => {
     res.json({ message: "Hello World!" })
 })
 
