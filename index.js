@@ -6,6 +6,7 @@ import dbConnection from './database/db_Connection.js';
 // import subcategoryRouter from './modules/subcategory/subcategory.routes.js'
 import dotenv from 'dotenv';
 import path from 'path';
+import Stripe from 'stripe';
 import { cartModel, orderModel, productModel } from './database/index.js';
 import { authRouter, brandRouter, cartRouter, categoryRouter, couponRouter, productRouter, reviewRouter, subcategoryRouter, wishlistRouter } from './modules/index.js';
 import orderRouter from './modules/order/order.routes.js';
@@ -21,10 +22,10 @@ const port = process.env.port || 3000
 ///////////////////////// (stripe webhook with checkout.session.completed event) //////////////////////////
 app.post('/webhook', express.raw({ type: 'application/json' }), catchAsyncError(async (req, res) => {
     const sig = req.headers['stripe-signature'].toString();
-
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
     let event;
 
-    event = stripe.webhooks.constructEvent(req.body, process.env.STRIPE_ENDPOiNTSECRET, endpointSecret);
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_ENDPOiNTSECRET);
 
     // Handle the event
     if (event.type == "checkout.session.completed") {
