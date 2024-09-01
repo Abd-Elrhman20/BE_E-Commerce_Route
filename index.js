@@ -8,7 +8,7 @@ import dotenv from 'dotenv'
 import path from 'path'
 import { authRouter, brandRouter, cartRouter, categoryRouter, couponRouter, productRouter, reviewRouter, subcategoryRouter, wishlistRouter } from './modules/index.js'
 import orderRouter from './modules/order/order.routes.js'
-import { AppError, globalError } from './utils/error.js'
+import { AppError, catchAsyncError, globalError } from './utils/error.js'
 
 const fullPath = path.resolve("./utils/config//.env")
 dotenv.config({ path: fullPath });
@@ -16,6 +16,25 @@ dotenv.config({ path: fullPath });
 dbConnection()
 const app = express()
 const port = process.env.port || 3000
+
+///////////////////////// (stripe webhook with checkout.session.completed event) //////////////////////////
+app.post('/webhook', express.raw({ type: 'application/json' }), catchAsyncError((req, res) => {
+    const sig = req.headers['stripe-signature'].toString();
+
+    let event;
+
+    event = stripe.webhooks.constructEvent(req.body, process.env.STRIPE_ENDPOiNTSECRET, endpointSecret);
+
+    // Handle the event
+    if (event.type == "checkout.session.completed") {
+        const checkoutSessionCompleted = event.data.object;
+        
+    }
+
+    // Return a 200 res to acknowledge receipt of the event
+    res.send();
+}));
+///////////////////////// (stripe webhook with checkout.session.completed event) //////////////////////////
 
 app.use(express.json())
 app.use("/uploads", express.static('./uploads'))
