@@ -91,6 +91,10 @@ export const createOrder = async (req, res, next) => {
             cancel_url: "https://www.facebook.com", // add cancel url
             payment_method_types: ["card"],
             mode: "payment",
+            metadata: {
+                // orderId: createdOrder._id.toString()
+                orderId: createdOrder._id
+            },
             line_items: createdOrder.products.map(product => {
                 return {
                     price_data: {
