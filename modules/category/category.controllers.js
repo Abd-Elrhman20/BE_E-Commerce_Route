@@ -243,18 +243,20 @@ export const deleteCategory = async (req, res, next) => {
         return next(new AppError(messages.review.failToDelete, 500))
     })
     // delete category image , subcategory image
-    FS_ImagePaths.push(existedCategory.image.path)  // category image
-    for (const path of FS_ImagePaths) {  // path with cloud = public_id
-        // deleteFile(path)
-        await cloudinary.uploader.destroy(path).catch((err) => { next(new AppError(messages.file.failToDelete, 500)) })
-        
-    }
+    // FS_ImagePaths.push(existedCategory.image.path)  // category image
+    FS_ImagePaths.push(existedCategory.image.public_id)  // category image with cloud
+    // for (const path of FS_ImagePaths) {  // path with cloud = public_id
+    //     deleteFile(path)
+    // }
+    await cloudinary.api.delete_resources(FS_ImagePaths).catch((err) => { next(new AppError(messages.file.failToDelete, 500)) })
     // delete images for products
-    await cloudinary.api.delete_resources(CloudPaths, (error, result) => {
-        if (error) {
-            return next(new AppError(messages.files.failToDelete, 500))
-        }
-    })
+    if (CloudPaths.length > 0) {
+        await cloudinary.api.delete_resources(CloudPaths, (error, result) => {
+            if (error) {
+                return next(new AppError(messages.files.failToDelete, 500))
+            }
+        })
+    }
     // delete category
     await existedCategory.deleteOne().catch((err) => {
         return next(new AppError(messages.category.failToDelete, 500))
