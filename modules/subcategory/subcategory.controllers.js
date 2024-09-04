@@ -32,18 +32,23 @@ export const addSubcategory = async (req, res, next) => {
 
     // prepare data
     const slug = slugify(name)
+    const { secure_url, public_id } = await cloudinary.uploader.upload(req.file.path, { folder: "e-commerce/subcategories" })
+    if (!secure_url || !public_id) {
+        return next(new AppError(messages.file.failToUpload, 500))
+    }
     const subcategory = new subcategoryModel({
         name,
         slug,
         category,
-        image: { path: req.file.path },
+        image: { secure_url: secure_url, public_id: public_id },
         createdBy: req.authUser._id
     })
 
     // add to database
     const createdSubcategory = await subcategory.save()
     if (!createdSubcategory) {
-        deleteFile(req.file.path)
+        // deleteFile(req.file.path)
+        await cloudinary.uploader.destroy(public_id).catch((err) => { next(new AppError(messages.file.failToDelete, 500)) })
         return next(new AppError(messages.category.failToCreate, 500))
     }
 
@@ -112,9 +117,16 @@ export const updateSubcategory = async (req, res, next) => {
 
     // update data
     if (req.file) {
-        deleteFile(existedSubcategory.image.path)
+        // deleteFile(existedSubcategory.image.path)
+        // delete old image from cloudinary
+        await cloudinary.uploader.destroy(existedSubcategory.image.public_id).catch((err) => { next(new AppError(messages.file.failToDelete, 500)) })
+        const { secure_url, public_id } = await cloudinary.uploader.upload(req.file.path, { folder: "e-commerce/subcategories" })
+        if (!secure_url || !public_id) {
+            return next(new AppError(messages.file.failToUpload, 500))
+        }
+        existedSubcategory.image = { secure_url: secure_url, public_id: public_id }
         // existedSubcategory.image.path = req.file.path
-        existedSubcategory.image = { path: req.file.path }
+        // existedSubcategory.image = { path: req.file.path }
     }
 
     if (name) {
@@ -127,7 +139,10 @@ export const updateSubcategory = async (req, res, next) => {
     // update db
     const updatedSubcategory = await existedSubcategory.save()
     if (!updatedSubcategory) {
-        deleteFile(req.file.path)
+        // deleteFile(req.file.path)
+        req.file && await cloudinary.uploader.destroy(public_id)  // in case of update image
+            .catch((err) => { next(new AppError(messages.file.failToDelete, 500)) })
+
         return next(new AppError(messages.subcategory.failToUpdate, 500))
     }
 
@@ -187,7 +202,9 @@ export const deleteSubcategory = async (req, res, next) => {
         return next(new AppError(messages.review.failToDelete, 500))
     })
     // delete subcategory image
-    deleteFile(existedSubcategory.image.path)
+    // deleteFile(existedSubcategory.image.path)
+    await cloudinary.uploader.destroy(existedSubcategory.image.public_id).catch((err) => { next(new AppError(messages.file.failToDelete, 500)) })
+
     // delete images for products
     await cloudinary.api.delete_resources(CloudPaths, (error, result) => {
         if (error) {
