@@ -4,7 +4,7 @@ import { isValid } from "../../middlewares/validation.js";
 // import fileUpload from "../../utils/multer.js";
 import { isAuthenticated } from "../../middlewares/authentication.js";
 import { isAuthorized } from "../../middlewares/authorization.js";
-import { catchAsyncError, fileUpload } from '../../utils/index.js'; // inhance import
+import { catchAsyncError, cloudinaryUpload, fileUpload } from '../../utils/index.js'; // inhance import
 import { addSubcategory, deleteSubcategory, getOneSubcategory, getSubcategories, updateSubcategory } from "./subcategory.controllers.js";
 import { addSubCategorySchema, findOneAndDeleteSubcategorySchema, updateSubcategorySchema } from './subcategory.validation.js';
 
@@ -15,7 +15,8 @@ subcategoryRouter.route('/')
         [
             isAuthenticated(),
             isAuthorized(["admin"]),
-            fileUpload("subcategory").single("image"),
+            // fileUpload("subcategory").single("image"),
+            cloudinaryUpload("subcategory").single("image"),
             isValid(addSubCategorySchema)
         ],
         catchAsyncError(addSubcategory))  // to do authentication & authorization
@@ -26,7 +27,8 @@ subcategoryRouter.route('/:subcategoryId')
         [
             isAuthenticated(),
             isAuthorized(["admin"]),
-            fileUpload("subcategory").single("image"),
+            // fileUpload("subcategory").single("image"),
+            cloudinaryUpload("subcategory").single("image"),
             isValid(updateSubcategorySchema)
         ],
         catchAsyncError(updateSubcategory))
