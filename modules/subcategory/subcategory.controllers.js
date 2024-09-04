@@ -206,11 +206,13 @@ export const deleteSubcategory = async (req, res, next) => {
     await cloudinary.uploader.destroy(existedSubcategory.image.public_id).catch((err) => { next(new AppError(messages.file.failToDelete, 500)) })
 
     // delete images for products
-    await cloudinary.api.delete_resources(CloudPaths, (error, result) => {
-        if (error) {
-            return next(new AppError(messages.files.failToDelete, 500))
-        }
-    })
+    if (CloudPaths.length > 0) {
+        await cloudinary.api.delete_resources(CloudPaths, (error, result) => {
+            if (error) {
+                return next(new AppError(messages.files.failToDelete, 500))
+            }
+        })
+    }
     // delete category
     await existedSubcategory.deleteOne().catch((err) => {
         return next(new AppError(messages.subcategory.failToDelete, 500))
