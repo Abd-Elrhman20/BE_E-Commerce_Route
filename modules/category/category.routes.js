@@ -4,18 +4,20 @@ import { isAuthenticated } from './../../middlewares/authentication.js';
 import { isAuthorized } from './../../middlewares/authorization.js';
 // import { catchAsyncError } from "../../utils/error.js";
 // import fileUpload from "../../utils/multer.js";
-import { catchAsyncError, fileUpload } from '../../utils/index.js'; // inhance import
+import { catchAsyncError, cloudinaryUpload, fileUpload } from '../../utils/index.js'; // inhance import
 import { addCategory, deleteCategory, getCategories, getOneCategory, updateCategory } from "./category.controllers.js";
 import { addCategorySchema, findOneOrDeleteCategorySchema, updateCategorySchema } from './category.validation.js';
 
-const categoryRouter = Router()
+const
+    categoryRouter = Router()
 
 categoryRouter.route('/')
     .post(
         [
             isAuthenticated(),
             isAuthorized(["admin"]),
-            fileUpload("category").single("image"),
+            // fileUpload("category").single("image"),
+            cloudinaryUpload("category").single("image"),
             isValid(addCategorySchema)
         ],
         catchAsyncError(addCategory))  // to do authentication & authorization
@@ -26,7 +28,8 @@ categoryRouter.route('/:categoryId')
         [
             isAuthenticated(),
             isAuthorized(["admin"]),
-            fileUpload("category").single("image"),
+            // fileUpload("category").single("image"),
+            cloudinaryUpload("category").single("image"),
             isValid(updateCategorySchema)
         ],
         catchAsyncError(updateCategory))
