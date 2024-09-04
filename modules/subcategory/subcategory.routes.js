@@ -39,6 +39,6 @@ subcategoryRouter.route('/:subcategoryId')
             isAuthorized(["admin"]),
             isValid(findOneAndDeleteSubcategorySchema)
         ],
-        deleteSubcategory)
+        catchAsyncError(deleteSubcategory))
 
 export default subcategoryRouter
